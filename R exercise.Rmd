@@ -1,0 +1,176 @@
+---
+title: "R markdown exercise"
+author: "Joshua"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+1) Load bacteria.csv into a dataframe
+
+
+```{r}
+getwd()
+setwd()
+```
+
+
+
+```{r}
+getwd()
+bacteria_data <- read.csv("bacteria.csv", header = T, sep = ",")
+
+```
+Check the internal structure of the dataframe
+
+```{r}
+head(bacteria_data)
+colnames(bacteria_data)
+summary(bacteria_data)
+str(bacteria_data)
+
+#Save the dataframe in another name.
+bacteria_data1 <- bacteria_data
+```
+
+
+2) Get the position of the first occurence of "Francisella tularensis" in the dataframe.
+
+
+```{r, message=FALSE}
+#First check the column that has "Francisella tularensis"
+#"Francisella tularensis" %in% bacteria_data1$genome
+
+# Using match to get the first occurence of "Francisella tularensis"
+
+match("Francisella tularensis", bacteria_data1$genome)
+
+#to check all locations that have "Francisella tularensis"
+which(bacteria_data1$genome %in% "Francisella tularensis")
+```
+
+3) Which different values are present in the column "isolation_country"?
+
+```{r}
+# to get a vector of unique values that are present in the column "isolation_country"
+unique(bacteria_data1$isolation_country)
+
+# to get a number of unique values that are present in the column "isolation_country"
+table(bacteria_data1$isolation_country)
+
+```
+
+
+4) Draw a scatterplot to visualize the relationship between the columns "GC" and "contigs".
+Save the plot as a pdf.
+
+```{r}
+#Scatter plot with color and proper label
+plot(bacteria_data1$GC,bacteria_data1$contigs, col= as.numeric(as.factor(bacteria_data1$contigs)), 
+     main = "scatterplot of GC and Contigs", xlab = "GC", ylab = "Contigs", cex = 2,pch=16)
+
+
+#To save the plot as pdf
+pdf("Bacteria_GC_Contigs.pdf")
+
+plot(bacteria_data1$GC,bacteria_data1$contigs, col= as.numeric(as.factor(bacteria_data1$contigs)), 
+     main = "scatterplot of GC and Contigs", xlab = "GC", ylab = "Contigs", cex = 2,pch=16)
+
+dev.off()
+```
+
+
+5) Create a subset, removing cases with less than 1797796 bp ("bp" column).
+How long is the new dataframe?
+
+```{r}
+# To get the range of values of a "bp" column
+range(bacteria_data1$bp)
+
+#To creat the subset
+Bacteria_data_bp <- subset(bacteria_data1, bacteria_data1$bp < 1797796)
+
+# To get the lenght of the new data frame.
+length(Bacteria_data_bp)# lenght and ncol finds the number of colums
+ncol(Bacteria_data_bp)
+nrow(Bacteria_data_bp) #To get the number of rows
+```
+
+6) In the dataframe new data frame replace the occurences of "Medium" in the "quality" column with the new value "Low"
+
+```{r}
+# First inspect the "quality" column
+table(Bacteria_data_bp$quality)
+
+
+Bacteria_data_bp$quality <- gsub("Medium","Low", Bacteria_data_bp$quality)
+
+#Inspect the new quality column
+table(Bacteria_data_bp$quality)
+```
+
+7) Create two subset from the new dataframe: "HIGH" with all the cases with a "High" value in the "quality" column, and "LOW" with all the cases with a "Low" value in the "quality" column
+
+
+```{r}
+# Subset with "High"
+High <- subset(Bacteria_data_bp, Bacteria_data_bp$quality == "High")
+
+#Subset with "Low"
+Low <- subset(Bacteria_data_bp, Bacteria_data_bp$quality == "Low")
+
+
+```
+
+
+
+8) Get the maximum and minumum value of "GC" in the dataframe "Low"
+
+```{r}
+#To get the range
+range(Low$GC)
+
+#To get min and max seperately
+min(Low$GC)
+max(Low$GC)
+```
+
+9.1) What kind of variables are the columns "quality" and "bp"?
+Quantitative or qualitative?
+
+```{r}
+typeof(bacteria_data1$quality)
+typeof(bacteria_data1$bp)
+
+#OR
+
+class(bacteria_data1$quality) #qualitative
+class(bacteria_data1$bp) #quantitative
+```
+
+
+9.2) Test if there is a significant difference between the "bp" of "HIGH" and "LOW".
+
+```{r}
+shapiro.test(High$bp)
+shapiro.test(Low$bp)
+
+# Since the p-value of both data is less than 0.05, we assume that the distribution is not normal. Therefore, we use wilcox test
+
+wilcox.test(High$bp, Low$bp)
+```
+
+9.3) Compare the p-value calculated with the p-value threshold.
+
+## The p-value I got is higher than 0.05.
+
+
+9.4) Comment on the results.
+
+## Since the p-value calculated is higher than the p-value threshold, we assume that there is no significantly different between "bp" of "HIGH" and "LOW".
